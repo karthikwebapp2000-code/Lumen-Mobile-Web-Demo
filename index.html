@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10131c">
+<title>Lumen Media Player — Mobile Demo</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0e14;--panel:#151a25;--panel2:#1d2432;--text:#f4f6fb;--muted:#9aa6bb;--accent:#8b7cff;--accent2:#45d6c5;--border:#2a3243}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1000px 500px at 50% -10%,#27274a 0%,var(--bg) 58%);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+button,input{font:inherit}
+.app{max-width:900px;margin:0 auto;padding:env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;gap:12px;padding:20px 0 18px}
+.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;box-shadow:0 8px 28px #8b7cff35}
+.logo svg{width:25px;height:25px;fill:#10131c}
+.brand{min-width:0;flex:1}
+.brand h1{font-size:21px;letter-spacing:-.5px;margin:0}
+.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.pill{border:1px solid #514a8a;background:#262345;color:#cfcaff;border-radius:999px;padding:6px 10px;font-size:11px;white-space:nowrap}
+main{display:grid;gap:14px}
+.card{background:linear-gradient(145deg,#191f2c,#111620);border:1px solid var(--border);border-radius:22px;padding:16px;box-shadow:0 12px 34px #0002}
+.player{padding:10px}
+.screen{aspect-ratio:16/9;background:#05070b;border-radius:16px;display:grid;place-items:center;position:relative;overflow:hidden}
+video{width:100%;height:100%;object-fit:contain;background:#05070b;display:none}
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px;gap:10px}
+.empty-icon{width:66px;height:66px;border:1px solid #343951;border-radius:22px;display:grid;place-items:center;background:#171a2a}
+.empty-icon svg{width:30px;height:30px;stroke:#aaa0ff}
+.empty strong{font-size:15px}
+.empty span{font-size:12px;color:var(--muted);max-width:260px;line-height:1.5}
+.screen-badge{position:absolute;top:10px;left:10px;background:#0009;border:1px solid #ffffff20;border-radius:8px;padding:5px 8px;font-size:10px;color:#d8def0}
+.controls{padding:13px 6px 5px}
+.now-playing{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+.track-icon{width:40px;height:40px;border-radius:12px;background:#282343;display:grid;place-items:center;color:#b8afff;flex-shrink:0}
+.track-info{min-width:0;flex:1}
+.track-info b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track-info small{color:var(--muted);font-size:11px}
+.time-row{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:10px;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);min-width:0}
+#seek{flex:1;height:22px}
+.transport{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px}
+.icon-btn{width:42px;height:42px;border:1px solid var(--border);background:var(--panel2);border-radius:14px;color:var(--text);display:grid;place-items:center;cursor:pointer}
+.icon-btn svg{width:18px;height:18px;fill:currentColor}
+.play-btn{width:54px;height:54px;border:0;border-radius:18px;background:linear-gradient(135deg,var(--accent),#6f65ef);color:white;box-shadow:0 8px 20px #7569f044}
+.play-btn svg{width:23px;height:23px}
+.volume-row{display:flex;align-items:center;gap:10px;margin-top:10px;color:var(--muted)}
+.volume-row svg{width:17px;height:17px;fill:currentColor;flex-shrink:0}
+.volume-row input{flex:1}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.section-head h2{font-size:15px;margin:0}
+.section-head small{font-size:11px;color:var(--muted)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.action{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--border);border-radius:15px;padding:13px;background:#1b2130;color:var(--text);cursor:pointer;min-width:0}
+.action svg{width:21px;height:21px;stroke:var(--accent2);flex-shrink:0}
+.action b{display:block;font-size:12px}
+.action small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.file-input{display:none}
+.playlist{display:flex;flex-direction:column;gap:8px}
+.empty-list{border:1px dashed #343d51;border-radius:14px;padding:18px;text-align:center;color:var(--muted);font-size:12px;line-height:1.5}
+.file-row{display:flex;align-items:center;gap:10px;padding:10px;border-radius:13px;background:#1b2130;border:1px solid transparent}
+.file-row.active{border-color:#766ce5;background:#24223c}
+.file-type{width:38px;height:38px;border-radius:12px;background:#292542;display:grid;place-items:center;color:#c2baff;font-size:10px;font-weight:700}
+.file-name{flex:1;min-width:0}
+.file-name b{display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-name small{display:block;font-size:10px;color:var(--muted);margin-top:3px}
+.file-row button{border:0;background:transparent;color:#b8afff;padding:8px;font-size:12px}
+.note{font-size:11px;line-height:1.55;color:var(--muted);margin:12px 0 0}
+footer{text-align:center;color:#69758b;font-size:10px;padding:18px 0 8px}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));max-width:500px;margin:auto;background:#252d3e;border:1px solid #46516a;color:white;border-radius:14px;padding:12px 15px;font-size:12px;box-shadow:0 12px 35px #0007;display:none;z-index:5}
+@media(min-width:720px){.app{padding-left:24px;padding-right:24px}.layout{display:grid;grid-template-columns:1.25fr .75fr;gap:14px;align-items:start}.left,.right{display:grid;gap:14px}.brand h1{font-size:24px}.card{padding:18px}}
+@media(max-width:380px){.app{padding-left:11px;padding-right:11px}.pill{font-size:10px}.transport{gap:8px}.actions{grid-template-columns:1fr}.card{padding:13px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.8c0-.8.9-1.3 1.6-.9l11 6.5a1.8 1.8 0 0 1 0 3.1l-11 6.5c-.7.4-1.6-.1-1.6-.9V4.8Z"/></svg></div>
+  <div class="brand"><h1>Lumen Media Player</h1><p>Light up your media · mobile demo</p></div>
+  <span class="pill">WEB DEMO</span>
+</header>
+
+<div class="layout">
+<div class="left">
+<section class="card player">
+  <div class="screen">
+    <span class="screen-badge">LUMEN • PREVIEW</span>
+    <video id="video" playsinline controls></video>
+    <div class="empty" id="empty">
+      <div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg></div>
+      <strong>Your next watch starts here</strong>
+      <span>Choose a video or audio file stored on your phone to test playback.</span>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="now-playing">
+      <div class="track-icon">♫</div>
+      <div class="track-info"><b id="trackTitle">Nothing playing yet</b><small id="trackSub">Select a local media file</small></div>
+    </div>
+    <div class="time-row"><span id="currentTime">0:00</span><input id="seek" type="range" min="0" max="1000" value="0" aria-label="Seek" /><span id="duration">0:00</span></div>
+    <div class="transport">
+      <button class="icon-btn" id="back" aria-label="Back 10 seconds" title="Back 10 seconds"><svg viewBox="0 0 24 24"><path d="M11 5V2L6 6l5 4V7c4 0 6 2.5 6 5.5S14.5 18 11.5 18 6 16 6 13H3c0 4.7 3.6 8 8.5 8S20 17.6 20 12.5 16.1 5 11 5Z"/></svg></button>
+      <button class="icon-btn play-btn" id="play" aria-label="Play or pause"><svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+      <button class="icon-btn" id="forward" aria-label="Forward 10 seconds" title="Forward 10 seconds"><svg viewBox="0 0 24 24"><path d="M13 5V2l5 4-5 4V7c-4 0-6 2.5-6 5.5S9.5 18 12.5 18 18 16 18 13h3c0 4.7-3.6 8-8.5 8S4 17.6 4 12.5 7.9 5 13 5Z"/></svg></button>
+    </div>
+    <div class="volume-row"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9H3Zm12.5 3a3.5 3.5 0 0 0-2-3.16v6.32a3.5 3.5 0 0 0 2-3.16Zm-2-8.7v2.06a7 7 0 0 1 0 13.28v2.06a9 9 0 0 0 0-17.4Z"/></svg><input id="volume" type="range" min="0" max="1" step=".05" value="1" aria-label="Volume"><span id="volLabel">100%</span></div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="section-head"><h2>Open media</h2><small>Files stay on your device</small></div>
+  <div class="actions">
+    <button class="action" id="openVideo"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg><span><b>Choose video</b><small>MP4, WebM and supported formats</small></span></button>
+    <button class="action" id="openAudio"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span><b>Choose audio</b><small>MP3, WAV and supported formats</small></span></button>
+  </div>
+  <input class="file-input" id="videoPicker" type="file" accept="video/*">
+  <input class="file-input" id="audioPicker" type="file" accept="audio/*">
+  <p class="note">This is a browser demo, not the native VLC-derived Android app. Playback formats depend on Chrome and the selected file. DRM-protected media and some codecs may not work.</p>
+</section>
+</div>
+
+<div class="right">
+<section class="card">
+  <div class="section-head"><h2>Recently opened</h2><button id="clearList" style="background:none;border:0;color:#b8afff;font-size:11px">Clear</button></div>
+  <div id="playlist" class="playlist"><div class="empty-list">Your selected files will appear here during this session.</div></div>
+</section>
+<section class="card">
+  <div class="section-head"><h2>Demo features</h2><small>Interactive preview</small></div>
+  <div class="playlist">
+    <div class="file-row"><div class="file-type">01</div><div class="file-name"><b>Local playback</b><small>Open files from your phone</small></div></div>
+    <div class="file-row"><div class="file-type">02</div><div class="file-name"><b>Touch-friendly controls</b><small>Seek, volume and skip</small></div></div>
+    <div class="file-row"><div class="file-type">03</div><div class="file-name"><b>Responsive layout</b><small>Designed for phone and desktop</small></div></div>
+  </div>
+</section>
+</div>
+</div>
+<footer>Lumen Media Player · browser prototype · no uploads or accounts</footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const $=id=>document.getElementById(id);
+const video=$('video'), empty=$('empty'), seek=$('seek');
+let currentURL=null, files=[];
+function fmt(s){if(!Number.isFinite(s)||s<0)return '0:00';s=Math.floor(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function toast(msg){const t=$('toast');t.textContent=msg;t.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display='none',2800)}
+function updatePlayIcon(playing){$('playIcon').innerHTML=playing?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M8 5v14l11-7z"/>'}
+function loadFile(file){
+ if(!file)return;
+ if(currentURL)URL.revokeObjectURL(currentURL);
+ currentURL=URL.createObjectURL(file);video.src=currentURL;video.style.display='block';empty.style.display='none';
+ $('trackTitle').textContent=file.name;$('trackSub').textContent=(file.type||'Media file')+' · '+(file.size/1024/1024).toFixed(1)+' MB';
+ files.unshift(file);files=files.slice(0,8);renderList();
+ video.load();const p=video.play();if(p&&p.catch)p.catch(()=>toast('File loaded. Tap Play to start playback.'));
+}
+function renderList(){
+ const box=$('playlist');box.innerHTML='';
+ if(!files.length){box.innerHTML='<div class="empty-list">Your selected files will appear here during this session.</div>';return}
+ files.forEach((f,i)=>{const row=document.createElement('div');row.className='file-row'+(i===0?' active':'');
+ const typ=(f.type||'media').startsWith('audio')?'AUDIO':(f.type||'').startsWith('video')?'VIDEO':'FILE';
+ row.innerHTML='<div class="file-type"></div><div class="file-name"><b></b><small></small></div><button type="button">Open</button>';
+ row.querySelector('.file-type').textContent=typ;row.querySelector('.file-name b').textContent=f.name;row.querySelector('.file-name small').textContent=(f.size/1024/1024).toFixed(1)+' MB';row.querySelector('button').addEventListener('click',()=>loadFile(f));box.appendChild(row);
+ });
+}
+$('openVideo').onclick=()=>$('videoPicker').click();$('openAudio').onclick=()=>$('audioPicker').click();
+$('videoPicker').onchange=e=>{loadFile(e.target.files[0]);e.target.value=''};
+$('audioPicker').onchange=e=>{loadFile(e.target.files[0]);e.target.value=''};
+$('play').onclick=()=>{if(!video.src){toast('Choose a media file first.');return}if(video.paused)video.play().catch(()=>toast('Tap Play again if Chrome blocked autoplay.'));else video.pause()};
+video.addEventListener('play',()=>updatePlayIcon(true));video.addEventListener('pause',()=>updatePlayIcon(false));
+video.addEventListener('loadedmetadata',()=>{$('duration').textContent=fmt(video.duration);seek.value=0});
+video.addEventListener('timeupdate',()=>{if(Number.isFinite(video.duration)&&video.duration>0){seek.value=video.currentTime/video.duration*1000;$('currentTime').textContent=fmt(video.currentTime);$('duration').textContent=fmt(video.duration)}});
+seek.addEventListener('input',()=>{if(Number.isFinite(video.duration)&&video.duration>0)video.currentTime=(seek.value/1000)*video.duration});
+$('back').onclick=()=>{if(video.src)video.currentTime=Math.max(0,video.currentTime-10)};
+$('forward').onclick=()=>{if(video.src&&Number.isFinite(video.duration))video.currentTime=Math.min(video.duration,video.currentTime+10)};
+$('volume').oninput=e=>{video.volume=Number(e.target.value);$('volLabel').textContent=Math.round(video.volume*100)+'%'};
+$('clearList').onclick=()=>{files=[];renderList();toast('Recent list cleared. Current playback remains loaded.')};
+video.addEventListener('error',()=>{if(video.src)toast('Chrome could not play this file or codec. Try an MP4 (H.264/AAC) or MP3.')});
+</script>
+</body>
+</html>
